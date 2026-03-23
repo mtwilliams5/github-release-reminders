@@ -46,7 +46,7 @@ export class ReleaseRemindersStack extends cdk.Stack {
     const fn = new nodejs.NodejsFunction(this, 'ReleaseReminderFn', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
-      entry: path.join(__dirname, '..', 'src', 'handler.ts'),
+      entry: path.join(__dirname, '..', '..', 'src', 'handler.ts'),
       timeout: cdk.Duration.minutes(5),
       memorySize: 256,
       bundling: {
