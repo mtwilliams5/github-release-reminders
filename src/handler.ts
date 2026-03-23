@@ -9,7 +9,7 @@ export async function handler(): Promise<{ statusCode: number; body: string }> {
   console.log('Handler invoked');
   try {
     console.log('Loading config...');
-    const config = loadConfig();
+    const config = await loadConfig();
     console.log('Config loaded:', {
       repositories: config.repositories,
       ticketPattern: config.ticketPattern,

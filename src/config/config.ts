@@ -14,7 +14,15 @@ export const JIRA_USER_EMAIL_PARAM = 'JIRA_USER_EMAIL';
 export const SLACK_BOT_TOKEN_PARAM = 'SLACK_BOT_TOKEN';
 export const SLACK_CHANNEL_ID_PARAM = 'SLACK_CHANNEL_ID';
 
-const IS_LOCAL = process.env.IS_LOCAL === 'true';
+/** SSM parameter / environment variable names for runtime config. */
+export const REPOSITORIES_PARAM = 'REPOSITORIES';
+export const TICKET_PATTERN_PARAM = 'TICKET_PATTERN';
+export const READY_STATUSES_PARAM = 'READY_STATUSES';
+export const QA_STATUSES_PARAM = 'QA_STATUSES';
+
+function isLocal(): boolean {
+  return process.env.IS_LOCAL === 'true';
+}
 
 let ssmClient: SSMClient | undefined;
 
@@ -32,7 +40,7 @@ const secretCache = new Map<string, { value: string; expiresAt: number }>();
  * When IS_LOCAL=true, reads from environment variables instead of SSM.
  */
 export async function getSecret(paramName: string): Promise<string> {
-  if (IS_LOCAL) {
+  if (isLocal()) {
     const value = process.env[paramName];
     if (!value) {
       throw new Error(
@@ -65,21 +73,38 @@ export async function getSecret(paramName: string): Promise<string> {
   return value;
 }
 
-/** Build config from environment variables. */
-export function loadConfig(): ReleaseReminderConfig {
-  const repositories = process.env.REPOSITORIES;
-  if (!repositories) {
-    throw new Error('REPOSITORIES environment variable is required');
+/**
+ * Retrieve an SSM/env parameter, returning a default value if it is not set.
+ * When IS_LOCAL=true, reads from environment variables; otherwise from SSM.
+ */
+async function getParameterOrDefault(
+  paramName: string,
+  defaultValue: string,
+): Promise<string> {
+  if (isLocal() && !process.env[paramName]) {
+    return defaultValue;
   }
+  try {
+    return await getSecret(paramName);
+  } catch {
+    return defaultValue;
+  }
+}
+
+/** Build config from SSM parameters (or environment variables when IS_LOCAL=true). */
+export async function loadConfig(): Promise<ReleaseReminderConfig> {
+  const repositories = await getSecret(REPOSITORIES_PARAM);
+
+  const [ticketPattern, readyStatusesRaw, qaStatusesRaw] = await Promise.all([
+    getParameterOrDefault(TICKET_PATTERN_PARAM, '\\w+[-\\s]\\d+'),
+    getParameterOrDefault(READY_STATUSES_PARAM, 'Ready to Deploy'),
+    getParameterOrDefault(QA_STATUSES_PARAM, 'In QA'),
+  ]);
 
   return {
     repositories: repositories.split(',').map((r) => r.trim()),
-    ticketPattern: process.env.TICKET_PATTERN ?? '\\w+[-\\s]\\d+',
-    readyStatuses: (process.env.READY_STATUSES ?? 'Ready to Deploy')
-      .split(',')
-      .map((s) => s.trim()),
-    qaStatuses: (process.env.QA_STATUSES ?? 'In QA')
-      .split(',')
-      .map((s) => s.trim()),
+    ticketPattern,
+    readyStatuses: readyStatusesRaw.split(',').map((s) => s.trim()),
+    qaStatuses: qaStatusesRaw.split(',').map((s) => s.trim()),
   };
 }

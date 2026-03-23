@@ -56,7 +56,7 @@ The Lambda runs on a schedule (Monday 9am UTC) and can also be triggered manuall
 
 **Processing pipeline:**
 
-1. Load config from environment variables; secrets from SSM (or env vars when `IS_LOCAL=true`)
+1. Load config from SSM String parameters; secrets from SSM SecureString parameters (or all from env vars when `IS_LOCAL=true`)
 2. For each configured repository:
    - Fetch the latest release tag and get commits since that release
    - Group commits by pull request, extracting Jira ticket IDs from PR titles
@@ -73,15 +73,20 @@ The Lambda runs on a schedule (Monday 9am UTC) and can also be triggered manuall
 
 ## Configuration
 
-**Environment variables** (set on the Lambda, or in `.env` for local testing):
+**Runtime config** (SSM String parameters under `/github-release-reminders/`, updated via console/CLI without redeploying):
 
-| Variable         | Required | Default           | Description                                   |
+| Parameter Name   | Required | Default           | Description                                   |
 | ---------------- | -------- | ----------------- | --------------------------------------------- |
 | `REPOSITORIES`   | Yes      | —                 | Comma-separated `owner/repo` list             |
 | `TICKET_PATTERN` | No       | `\w+[-\s]\d+`     | Regex to extract ticket IDs from PR titles    |
 | `READY_STATUSES` | No       | `Ready to Deploy` | Comma-separated Jira statuses meaning "ready" |
 | `QA_STATUSES`    | No       | `In QA`           | Comma-separated Jira statuses meaning "in QA" |
-| `IS_LOCAL`       | No       | —                 | Set to `true` to read secrets from env vars   |
+
+**Environment variable** (set on the Lambda):
+
+| Variable         | Required | Default           | Description                                   |
+| ---------------- | -------- | ----------------- | --------------------------------------------- |
+| `IS_LOCAL`       | No       | —                 | Set to `true` to read all params from env vars|
 
 **Secrets** (SSM SecureString parameters in AWS, or env vars when `IS_LOCAL=true`):
 
@@ -97,7 +102,7 @@ The Lambda runs on a schedule (Monday 9am UTC) and can also be triggered manuall
 ## Local Development
 
 1. Copy `.env.example` to `.env` and populate with real values
-2. Run the handler locally with `IS_LOCAL=true` to bypass SSM
+2. Run the handler locally with `IS_LOCAL=true` to bypass SSM (all config and secret params are read from env vars)
 
 ## Build & Deploy Commands
 

@@ -7,9 +7,7 @@ describe('ReleaseRemindersStack', () => {
 
   beforeAll(() => {
     const app = new cdk.App();
-    const stack = new ReleaseRemindersStack(app, 'TestStack', {
-      repositories: 'org/repo1,org/repo2',
-    });
+    const stack = new ReleaseRemindersStack(app, 'TestStack');
     template = Template.fromStack(stack);
   });
 
@@ -17,15 +15,14 @@ describe('ReleaseRemindersStack', () => {
     template.resourceCountIs('AWS::Lambda::Function', 1);
   });
 
-  it('should set environment variables on the Lambda', () => {
-    template.hasResourceProperties('AWS::Lambda::Function', {
-      Environment: {
-        Variables: {
-          REPOSITORIES: 'org/repo1,org/repo2',
-          TICKET_PATTERN: '\\w+-\\d+',
-        },
-      },
-    });
+  it('should not set config environment variables on the Lambda', () => {
+    const functions = template.findResources('AWS::Lambda::Function');
+    const fnKey = Object.keys(functions)[0];
+    const envVars = functions[fnKey].Properties?.Environment?.Variables ?? {};
+    expect(envVars).not.toHaveProperty('REPOSITORIES');
+    expect(envVars).not.toHaveProperty('TICKET_PATTERN');
+    expect(envVars).not.toHaveProperty('READY_STATUSES');
+    expect(envVars).not.toHaveProperty('QA_STATUSES');
   });
 
   it('should create an EventBridge schedule rule', () => {
@@ -42,12 +39,7 @@ describe('ReleaseRemindersStack', () => {
     template.hasOutput('FunctionUrl', {});
   });
 
-  it('should create SSM parameters with the prefix', () => {
-    template.hasResourceProperties('AWS::SSM::Parameter', {
-      Name: '/github-release-reminders/GITHUB_TOKEN',
-    });
-    template.hasResourceProperties('AWS::SSM::Parameter', {
-      Name: '/github-release-reminders/SLACK_BOT_TOKEN',
-    });
+  it('should not create CDK-managed SSM parameters', () => {
+    template.resourceCountIs('AWS::SSM::Parameter', 0);
   });
 });
