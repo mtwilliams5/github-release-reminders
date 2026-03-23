@@ -107,4 +107,4 @@ aws ssm put-parameter \
 
 ## CI/CD
 
-CircleCI runs build → lint → test → cdk-diff on every branch. Deployment to AWS is triggered automatically when a `v*` tag is pushed (e.g. `v1.0.0`).
+To deploy this to your own infrastructure, either fork the repository and add your CI config, or create your repository using this one as a template (if you require your repo to be private, for example).
