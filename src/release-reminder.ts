@@ -87,19 +87,14 @@ async function processRepository(
   repoFullName: string,
   config: ReleaseReminderConfig,
 ): Promise<RepositoryReport | undefined> {
-  console.log(`Processing ${repoFullName}...`);
-
   const pullRequests = await getUnreleasedPullRequests(
     repoFullName,
     config.ticketPattern,
   );
 
   if (pullRequests.length === 0) {
-    console.log(`  No unreleased changes in ${repoFullName}`);
     return undefined;
   }
-
-  console.log(`  Found ${pullRequests.length} unreleased PRs`);
 
   // Collect all unique ticket IDs across all PRs
   const allTicketIds = pullRequests.flatMap((pr) => pr.ticketIds);
@@ -139,10 +134,6 @@ async function processRepository(
 export async function processReleaseReminders(
   config: ReleaseReminderConfig,
 ): Promise<void> {
-  console.log(
-    `Starting release reminder check for ${config.repositories.length} repositories`,
-  );
-
   // Collect reports for all repos
   const reports: RepositoryReport[] = [];
   // eslint-disable-next-line no-restricted-syntax
@@ -161,12 +152,5 @@ export async function processReleaseReminders(
   // Post all reports as a single summary + threaded replies
   if (reports.length > 0) {
     await postSlackReports(reports);
-    console.log(
-      `Posted Slack summary with ${reports.length} threaded report${reports.length === 1 ? '' : 's'}`,
-    );
-  } else {
-    console.log('No repos with unreleased changes — nothing to post');
   }
-
-  console.log('Release reminder check complete');
 }

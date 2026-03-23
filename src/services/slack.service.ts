@@ -266,7 +266,6 @@ export async function postSlackReports(
   }
 
   const threadTs = parentResult.ts;
-  console.log(`  Posted summary message (ts: ${threadTs})`);
 
   // Post each repo report as a threaded reply sequentially
   // eslint-disable-next-line no-restricted-syntax
