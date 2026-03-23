@@ -21,6 +21,12 @@ import {
   SSM_PARAM_PREFIX,
 } from '../src/config';
 
+// Resolve project root — works from both source (infra/) and compiled (dist/infra/)
+const PROJECT_ROOT =
+  path.basename(path.resolve(__dirname, '..')) === 'dist'
+    ? path.resolve(__dirname, '..', '..')
+    : path.resolve(__dirname, '..');
+
 export class ReleaseRemindersStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -46,7 +52,7 @@ export class ReleaseRemindersStack extends cdk.Stack {
     const fn = new nodejs.NodejsFunction(this, 'ReleaseReminderFn', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
-      entry: path.join(__dirname, '..', '..', 'src', 'handler.ts'),
+      entry: path.join(PROJECT_ROOT, 'src', 'handler.ts'),
       timeout: cdk.Duration.minutes(5),
       memorySize: 256,
       bundling: {
