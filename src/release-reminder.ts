@@ -136,7 +136,6 @@ export async function processReleaseReminders(
 ): Promise<void> {
   // Collect reports for all repos
   const reports: RepositoryReport[] = [];
-  // eslint-disable-next-line no-restricted-syntax
   await config.repositories.reduce(async (prev, repo) => {
     await prev;
     try {

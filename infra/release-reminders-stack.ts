@@ -112,13 +112,11 @@ export class ReleaseRemindersStack extends cdk.Stack {
       authType: lambda.FunctionUrlAuthType.AWS_IAM,
     });
 
-    // eslint-disable-next-line no-new
     new cdk.CfnOutput(this, 'FunctionUrl', {
       value: fnUrl.url,
       description: 'URL to manually trigger the release reminder Lambda',
     });
 
-    // eslint-disable-next-line no-new
     new cdk.CfnOutput(this, 'FunctionName', {
       value: fn.functionName,
       description:

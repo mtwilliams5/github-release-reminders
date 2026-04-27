@@ -201,7 +201,8 @@ function buildSummaryMessage(reports: RepositoryReport[]): object {
     } else {
       emoji = 'ℹ️';
     }
-    return `${emoji} *${report.repository}* — ${total} unreleased PR${total === 1 ? '' : 's'} (${ready} ready)`;
+    const releasesUrl = `https://github.com/${report.repository}/releases`;
+    return `${emoji} *<${releasesUrl}|${report.repository}>* — ${total} unreleased PR${total === 1 ? '' : 's'} (${ready} ready)`;
   });
 
   return {
@@ -268,7 +269,6 @@ export async function postSlackReports(
   const threadTs = parentResult.ts;
 
   // Post each repo report as a threaded reply sequentially
-  // eslint-disable-next-line no-restricted-syntax
   await reports.reduce(async (prev, report) => {
     await prev;
     const payload = buildSlackMessage(report, jiraBaseUrl) as {
