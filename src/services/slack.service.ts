@@ -269,7 +269,6 @@ export async function postSlackReports(
   const threadTs = parentResult.ts;
 
   // Post each repo report as a threaded reply sequentially
-  // eslint-disable-next-line no-restricted-syntax
   await reports.reduce(async (prev, report) => {
     await prev;
     const payload = buildSlackMessage(report, jiraBaseUrl) as {
