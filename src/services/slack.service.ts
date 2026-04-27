@@ -201,7 +201,8 @@ function buildSummaryMessage(reports: RepositoryReport[]): object {
     } else {
       emoji = 'ℹ️';
     }
-    return `${emoji} *${report.repository}* — ${total} unreleased PR${total === 1 ? '' : 's'} (${ready} ready)`;
+    const releasesUrl = `https://github.com/${report.repository}/releases`;
+    return `${emoji} *<${releasesUrl}|${report.repository}>* — ${total} unreleased PR${total === 1 ? '' : 's'} (${ready} ready)`;
   });
 
   return {
